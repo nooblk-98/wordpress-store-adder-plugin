@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Store Importer</title>
+    <script>
+        function importStores(event) {
+            event.preventDefault();
+            var formData = new FormData(document.getElementById('import-form'));
+            var logDiv = document.getElementById('import-log');
+            logDiv.innerHTML = '';  // Clear existing logs
+
+            fetch('/import-stores', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json())
+              .then(data => {
+                  if (data.stores) {
+                      data.stores.forEach(store => {
+                          var p = document.createElement('p');
+                          p.textContent = store.message;
+                          logDiv.appendChild(p);
+                      });
+                  } else {
+                      var p = document.createElement('p');
+                      p.textContent = data.error || 'Unknown error';
+                      logDiv.appendChild(p);
+                  }
+              })
+              .catch(error => {
+                  var p = document.createElement('p');
+                  p.textContent = 'Error: ' + error;
+                  logDiv.appendChild(p);
+              });
+        }
+    </script>
+</head>
+<body>
+    <h1>Excel to JSON Converter</h1>
+    <form action="/convert" method="post" enctype="multipart/form-data">
+        <label for="file">Upload Excel File:</label>
+        <input type="file" name="file" id="file" accept=".xlsx"><br><br>
+        <label for="sheet_name">Sheet Name:</label>
+        <input type="text" name="sheet_name" id="sheet_name" placeholder="Enter sheet name"><br><br>
+        <input type="submit" value="Convert">
+    </form>
+
+    <h1>Store Importer</h1>
+    <form id="import-form" onsubmit="importStores(event)">
+        <label for="json_file">Upload JSON File:</label>
+        <input type="file" name="json_file" id="json_file" accept=".json"><br><br>
+        <input type="submit" value="Import Stores">
+    </form>
+    <div id="import-log"></div>
+</body>
+</html>
